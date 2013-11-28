@@ -2,38 +2,34 @@
 for uno sd card should connect to 11 (MOSI), 12 (MISO), 13 (SCK)
  for 2560 it should be 51 (MOSI), 50 (MISO), 52 (SCK)
  */
- 
- 
+
+
 #include <SD.h>
 #include <SPI.h>
- 
+
 //for sd test
 File root;
 int i=0;
 int fileNumber=0;
- 
+
 //set vs1003 pins
 int xCs=9;
 int xReset=8;
 int dreq= 7;
 int xDcs=6;
- 
+
 int sspin=53; //sspin for mega
- 
+
 int volume=0x30;//set volume here 
 int DREQ=digitalRead(dreq);
- 
+
 char* playlist[]={
 };
- 
+
 File mp3;
- 
+
 void setup(){
-  pinMode(7,INPUT);
-  pinMode(8,OUTPUT);
-  pinMode(6,OUTPUT);
-  pinMode(9,OUTPUT);
-  pinMode(53,OUTPUT);
+  delay(10);
   //set 1003
   SPI.begin();
   SPI.setBitOrder(MSBFIRST); //send most-significant bit first
@@ -45,10 +41,10 @@ void setup(){
   pinMode(9,OUTPUT);
   digitalWrite(sspin,HIGH);
   Mp3Reset();
- 
+
   Serial.begin(9600);
   Serial.print("Set SD card..."); 
-  while (!SD.begin(53)){   
+  while (!SD.begin()){   
   }
   Serial.println("sd ready."); 
   root = SD.open("/");
@@ -58,14 +54,24 @@ void setup(){
   Serial.print(" file(s)");
   Serial.println();
 }
- 
+
 void loop(){
-   
+  play("s1.mp3");
+  play("s2.mp3");
+  play("s3.mp3");
+  play("s4.mp3");
   play("s5.mp3");
-  
- 
+  play("s6.mp3");
+  play("s8.mp3");
+  play("s9.mp3");
+  play("s10.mp3");
+  play("s11.mp3");
+  play("s12.mp3");
+  play("s13.mp3");
+  play("s14.mp3");
+
 }
- 
+
 void play(char* playplay){
   int val,i;
   mp3=SD.open(playplay);
@@ -153,4 +159,5 @@ void printDirectory(File dir, int numTabs) {
     }
   }
 }
+
 
