@@ -32,11 +32,11 @@ void setup(){
   SPI.begin();
   SPI.setBitOrder(MSBFIRST); //send most-significant bit first
   SPI.setDataMode(SPI_MODE0);
-  SPI.setClockDivider(SPI_CLOCK_DIV16); 
-
+  SPI.setClockDivider(SPI_CLOCK_DIV2); 
   digitalWrite(sspin,HIGH);
   Mp3Reset();
-
+  digitalWrite(sspin,LOW);
+  
   Serial.begin(9600);
   Serial.print("Set SD card..."); 
   while (!SD.begin()){   
@@ -66,7 +66,7 @@ void play(char* playplay){
     digitalWrite(xDcs,HIGH);
     digitalWrite(sspin,LOW);
   }
-  if(DREQ==HIGH){
+  //if(DREQ==HIGH){
     while(mp3.available()){
       for(i=0;i<32;i++){
         digitalWrite(sspin,HIGH);
@@ -78,48 +78,44 @@ void play(char* playplay){
       }
       delayMicroseconds(35);
     }
-  }
+  //}
   mp3.close();
 }
+
 void Mp3Reset(){
   digitalWrite(xReset,LOW);
-  delay(100);
   digitalWrite(xCs,HIGH);
   digitalWrite(xDcs,HIGH);
+  delay(100);
   digitalWrite(xReset,HIGH);
-  commad(0X00,0X08,0X04); //向MODE中写入
-  delay(10);
-  if(DREQ==HIGH){
-    commad(0X03,0XC0,0X00);//设置VS1003的时钟
-    delay(10);
-    commad(0X05,0XBB,0X81);//设置VS1003的采样率 44kps 立体声
-    delay(10);
-    commad(0X02,0X00,0X55);//设置重音
-    delay(10);
-    commad(0X0B,volume,volume);//音量最高0x0000音量最低0xFEFE
-    delay(10); 
-    SPI.transfer(0);
-    SPI.transfer(0);
-    SPI.transfer(0);        
-    SPI.transfer(0);
-    digitalWrite(xCs,HIGH);
-    digitalWrite(xReset,HIGH);
-    digitalWrite(xDcs,HIGH);
-    digitalWrite(sspin,LOW);
+  sciWrite(0x00,0x08,0x00); //向MODE中写入
+  sciWrite(0x03,0xF8,0x00);//设置VS1003的时钟
+  SPI.setClockDivider(SPI_CLOCK_DIV8);
+  sciWrite(0X02,0X00,0X00);
+  sciWrite(0X0B,volume,volume);//音量最高0x0000音量最低0xFEFE
+  while(!digitalRead(dreq)){
   }
+  digitalWrite(xReset,HIGH);
+  digitalWrite(xCs,HIGH);
+  digitalWrite(xDcs,HIGH);
 }
-void commad(unsigned char addr,unsigned char hdat,unsigned char ldat )
+
+void sciWrite(unsigned char addr,unsigned char hdat,unsigned char ldat)
 {  
-  int DREQ=digitalRead(dreq);
-  if(DREQ==HIGH){
+  while(!digitalRead(dreq)){
+  }
+  if(digitalRead(dreq)){  //double check
     digitalWrite(xCs,LOW);
-    SPI.transfer(0X02);
+    SPI.transfer(0x02);
     SPI.transfer(addr);
     SPI.transfer(hdat);
     SPI.transfer(ldat);    
     digitalWrite(xCs,HIGH);
   }
 }
+
+//void sciRead(unsigned char addr,
+
 void printDirectory(File dir, int numTabs) {
   while(i<6){
     File entry =  dir.openNextFile();
@@ -141,5 +137,3 @@ void printDirectory(File dir, int numTabs) {
     }
   }
 }
-
-
