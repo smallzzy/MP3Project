@@ -4,6 +4,8 @@ for uno sd card should connect to 11 (MOSI), 12 (MISO), 13 (SCK)
  */
 #include <SD.h>
 #include <SPI.h>
+#include"config.h"
+
 //set vs1003 pins
 int dreq= 6;
 int xCs=7;
@@ -14,14 +16,12 @@ int xReset=9;
 File root;
 int i=0;
 int fileNumber=0;
-
 int sspin=53; //SD Select pin
 
-int volume=0x30;//set volume here 
-
-//play control
+//music control
 int DREQ;
 File mp3;
+int volume=0x30;//set volume here 
 
 void setup(){
   pinMode(dreq,INPUT);
@@ -36,7 +36,7 @@ void setup(){
   digitalWrite(sspin,HIGH);
   Mp3Reset();
   digitalWrite(sspin,LOW);
-  
+
   Serial.begin(9600);
   Serial.print("Set SD card..."); 
   while (!SD.begin()){   
@@ -67,17 +67,17 @@ void play(char* playplay){
     digitalWrite(sspin,LOW);
   }
   //if(DREQ==HIGH){
-    while(mp3.available()){
-      for(i=0;i<32;i++){
-        digitalWrite(sspin,HIGH);
-        val =mp3.read();
-        digitalWrite(xDcs,LOW);
-        SPI.transfer(val);
-        digitalWrite(xDcs,HIGH);
-        digitalWrite(sspin,LOW);
-      }
-      delayMicroseconds(35);
+  while(mp3.available()){
+    for(i=0;i<32;i++){
+      digitalWrite(sspin,HIGH);
+      val =mp3.read();
+      digitalWrite(xDcs,LOW);
+      SPI.transfer(val);
+      digitalWrite(xDcs,HIGH);
+      digitalWrite(sspin,LOW);
     }
+    delayMicroseconds(35);
+  }
   //}
   mp3.close();
 }
@@ -137,3 +137,4 @@ void printDirectory(File dir, int numTabs) {
     }
   }
 }
+
