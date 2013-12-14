@@ -4,10 +4,10 @@ for uno sd card should connect to 11 (MOSI), 12 (MISO), 13 (SCK)
  */
 #include <SD.h>
 #include <SPI.h>
-#include"config.h"
+//#include"config.h"
 
 //set vs1003 pins
-int dreq= 6;
+int dreq= 3;
 int xCs=7;
 int xDcs=8;
 int xReset=9;
@@ -22,6 +22,7 @@ int sspin=53; //SD Select pin
 int DREQ;
 File mp3;
 int volume=0x30;//set volume here 
+int remain;
 
 void setup(){
   pinMode(dreq,INPUT);
@@ -55,31 +56,30 @@ void loop(){
 }
 
 void play(char* playplay){
-  int val,i;
   mp3=SD.open(playplay);
+  
   delay(10);
-  for(i=0;i<548;i++){
+  for(int i=0;i<512;i++){
     digitalWrite(sspin,HIGH);
-    val =mp3.read();
+    byte val =mp3.read();
+    digitalWrite(sspin,LOW);
     digitalWrite(xDcs,LOW);
     SPI.transfer(val);
     digitalWrite(xDcs,HIGH);
-    digitalWrite(sspin,LOW);
   }
-  //if(DREQ==HIGH){
-  while(mp3.available()){
-    for(i=0;i<32;i++){
-      digitalWrite(sspin,HIGH);
-      val =mp3.read();
-      digitalWrite(xDcs,LOW);
-      SPI.transfer(val);
-      digitalWrite(xDcs,HIGH);
-      digitalWrite(sspin,LOW);
-    }
-    delayMicroseconds(35);
-  }
-  //}
+  attachInterrupt(1,processor,RISING);
   mp3.close();
+}
+void processor(){
+  for(int i=0;i<32;i++){
+    digitalWrite(sspin,HIGH);
+    byte val =mp3.read();
+    digitalWrite(sspin,LOW);
+    digitalWrite(xDcs,LOW);
+    SPI.transfer(val);
+    digitalWrite(xDcs,HIGH);
+  }
+  
 }
 
 void Mp3Reset(){
@@ -137,4 +137,5 @@ void printDirectory(File dir, int numTabs) {
     }
   }
 }
+
 
